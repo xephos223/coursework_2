@@ -56,7 +56,7 @@ node {
                                 verbose: true,
                                 transfers: [
                                     sshTransfer(
-                                        execCommand: "kubectl set image deployment/coursework-2 coursework-2=rthoms218/coursework_2:${env.BUILD_NUMBER}"
+                                        execCommand: "kubectl set image deployment/coursework_2 coursework_2=rthoms218/coursework_2:${env.BUILD_NUMBER}"
                                     )
                                 ]
                             )
