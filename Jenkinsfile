@@ -6,7 +6,7 @@ pipeline {
       stage('Build') {
          steps {
             //Get code from the right branch of the repository
-            git branch: 'myBranch', url: 'https://github.com/xephos223/coursework_2/'
+            git branch: 'MyBranch', url: 'https://github.com/xephos223/coursework_2/'
              
          }
       }
