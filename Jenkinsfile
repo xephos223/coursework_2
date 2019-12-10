@@ -44,25 +44,4 @@ node {
             app.push("latest")
         }
     } 
-       stage("Deploying to Kubernetes") {
-            steps {
-                script {
-                    sshPublisher (
-                        continueOnError: false, 
-                        failOnError: true,
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: "production_server",
-                                verbose: true,
-                                transfers: [
-                                    sshTransfer(
-                                        execCommand: "kubectl set image deployment/coursework_2 coursework_2=rthoms218/coursework_2:${env.BUILD_NUMBER}"
-                                    )
-                                ]
-                            )
-                        ]
-                    )
-                }
-            }
-        }
 }
