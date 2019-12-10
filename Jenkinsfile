@@ -35,7 +35,7 @@ node {
     }
 
     stage('Build image') {
-        app = docker.build("rthoms218/coursework_2")
+        app = docker.build("rthoms218/coursework")
     }
 
     stage('Push image') {
