@@ -1,0 +1,91 @@
+- name: Configure Node VM
+  hosts: azure
+  user: azureuser
+  become: yes
+
+  vars:
+    myResourceGroup: Coursework
+    myVM: production-node
+
+  tasks:
+
+  - name: Install Various Packages
+    apt:
+      update_cache: yes
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - apt-transport-https 
+      - curl
+
+  - stat:
+      path: /home/azureuser/docker.sh
+    register: docker_sh
+
+  - name: Copy docker.sh to Node
+    copy:
+      src: /home/rthoms218/ansible/docker.sh
+      dest: /home/azureuser/docker.sh
+
+  - name: Make docker.sh executable
+    file:
+      path: "{{ dockerInstallScript }}"
+      mode: "777"
+
+  - name: Install docker using docker.sh
+    command: sudo "{{ dockerInstallScript }}"
+
+  - name: Add kubectl apt-key
+    shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    
+  - name: Add k8s sources
+    shell: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+
+  - name: Install kubectl
+    apt:
+      name: kubectl
+      update_cache: yes
+
+  - stat:
+      path: /usr/local/bin/minikube
+    register: minikube_stat
+
+  - name: Download minikube binary
+    command: curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    when: minikube_stat.stat.exists == false
+
+  - name: Add executable status to minikube binary
+    file:
+      path: ./minikube
+      mode: "777"
+    when: minikube_stat.stat.exists == false
+
+  - name: Install minikube
+    command: mv minikube /usr/local/bin
+    when: minikube_stat.stat.exists == false
+
+  - name: Start minikube
+    command: minikube start --vm-driver=none
+
+  - stat:
+      path: /home/azureuser/kubectl-admin-config.sh
+    register: kubectlConfig
+
+  - name: Copy admin.conf to $HOME
+    shell: sudo cp /etc/kubernetes/admin.conf $HOME/
+
+  - name: Change owner of admin.conf
+    shell: sudo chown $(id -u):$(id -g) $HOME/admin.conf
+
+  - name: Export admin.conf to path
+    shell: export KUBECONFIG=$HOME/admin.conf
+
+  - name: Create K8S Deployment
+    command: kubectl create deployment coursework --image=rthoms218/coursework:latest
+
+  - name: Create K8S Service
+    command: kubectl expose deployment/coursework --type="NodePort" --port 8080 --name node-port-service
+
+  - name: Scale deployment to 4 nodes
+    command: kubectl scale deployment/coursework --replicas=4
+
