@@ -5,7 +5,8 @@
 
   vars:
     myResourceGroup: Coursework
-    myVM: production-node
+    myVM: production-node 
+    dockerInstallScript: /home/azureuser/docker.sh
 
   tasks:
 
@@ -70,15 +71,6 @@
   - stat:
       path: /home/azureuser/kubectl-admin-config.sh
     register: kubectlConfig
-
-  - name: Copy admin.conf to $HOME
-    shell: sudo cp /etc/kubernetes/admin.conf $HOME/
-
-  - name: Change owner of admin.conf
-    shell: sudo chown $(id -u):$(id -g) $HOME/admin.conf
-
-  - name: Export admin.conf to path
-    shell: export KUBECONFIG=$HOME/admin.conf
 
   - name: Create K8S Deployment
     command: kubectl create deployment coursework --image=rthoms218/coursework:latest
